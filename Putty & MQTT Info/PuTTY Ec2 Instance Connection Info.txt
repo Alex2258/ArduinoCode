@@ -1,0 +1,69 @@
+Public DNS (IPv4): 
+ubuntu@ec2-35-153-164-108.compute-1.amazonaws.com
+
+Instance ID: i-076ee1b9dae906e23
+
+Default Username for Amazon Linux AMI: 
+ubuntu
+
+Elastic IP
+35.153.164.108
+
+Certificate ARN Created on Ubuntu: 
+arn:aws:iot:us-east-1:090792256374:cert/0ececcad71345899a66a223c86f5b1935d2acfe8c498c43fc9407f009339db74
+
+Thing ARN:
+arn:aws:iot:us-east-1:090792256374:thing/ArduinoRev3
+
+Shadow ARN:
+arn:aws:iot:us-east-1:090792256374:thing/ArduinoRev3
+
+
+
+sudo nano /etc/mosquitto/conf.d/bridge.conf
+
+
+connection awsiot
+address a19bzzqi5jpbs0.iot.us-east-1.amazonaws.com
+
+#topic awsiot_to_localgateway in 1
+#topic localgateway_to_awsiot out 1
+topic $aws/things/ArduinoRev3/shadow/get/accepted in 1
+topic $aws/things/ArduinoRev3/shadow/get out 1
+topic both_directions both 1
+
+bridge_protocol_version mqttv311
+bridge_insecure false
+
+cleansession true
+clientid bridgeawsiot
+start_type automatic
+notifications false
+log_type all
+
+
+bridge_cafile /etc/mosquitto/certs/rootCA.pem
+
+bridge_certfile /etc/mosquitto/certs/cert.crt
+
+bridge_keyfile /etc/mosquitto/certs/private.key
+
+
+mosquitto_pub -h localhost -p 1883 -q 1 -d -t $aws/things/ArduinoRev3/shadow/get  -i clientid1 -m ""
+mosquitto_pub -h localhost -p 1883 -q 1 -d -t awsiot_to_localgateway -i clientid1 -m "{\"Op\": \"Open\", \"Dist\": \"10\"}"
+
+IoT Shadow Device will publish to these topics:
+
+$aws/things/ArduinoRev3/shadow/update
+$aws/things/ArduinoRev3/shadow/update/accepted
+$aws/things/ArduinoRev3/shadow/update/documents
+$aws/things/ArduinoRev3/shadow/update/rejected
+$aws/things/ArduinoRev3/shadow/get
+$aws/things/ArduinoRev3/shadow/get/accepted
+$aws/things/ArduinoRev3/shadow/get/rejected
+
+
+
+sudo service mosquitto start
+sudo service mosquitto stop
+sudo service mosquitto restart
